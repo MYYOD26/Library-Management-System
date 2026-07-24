@@ -1,9 +1,52 @@
-version: "3.8"
+name: library-management-system
+
 services:
+  lms-backend:
+    container_name: LMS-BACKEND
+    image: lms-backend:latest
+    build:
+      context: ./lms.backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ConnectionStrings__DefaultConnection=Host=lms-db;Port=5432;Database=LMS-DB;Username=postgres;Password=postgres
+    depends_on:
+      lms-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  lms-db:
+    container_name: LMS-DB
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=LMS-DB
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d LMS-DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   client:
+    container_name: LMS-CLIENT
+    image: lms-client:latest
     build:
       context: ./lms.client
       dockerfile: Dockerfile
     ports:
       - "3000:80"
     restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+
