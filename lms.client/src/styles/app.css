@@ -36,13 +36,27 @@ body {
 }
 
 .navbar__inner {
-  max-width: 1120px;
-  margin: 0 auto;
+  width: 100%;
   padding: 16px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+}
+
+.app-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 24px;
+  padding: 24px;
+  max-width: none;
+}
+
+
+
+main {
+  min-width: 0;
+  padding: 0;
 }
 
 .navbar__brand {
