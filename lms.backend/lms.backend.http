@@ -1,6 +1,147 @@
 @lms.backend_HostAddress = http://localhost:5139
 
-GET {{lms.backend_HostAddress}}/weatherforecast/
-Accept: application/json
+### เข้าสู่ระบบ (admin) — request อื่นๆ ด้านล่างจะใช้ token จาก response นี้อัตโนมัติ
+# @name login
+POST {{lms.backend_HostAddress}}/api/auth/login
+Content-Type: application/json
 
-###
+{
+  "username": "admin",
+  "password": "Admin123!"
+}
+
+### ข้อมูลผู้ใช้ปัจจุบันจาก token
+GET {{lms.backend_HostAddress}}/api/auth/me
+Authorization: Bearer {{login.response.body.token}}
+
+### เปลี่ยนรหัสผ่านของตัวเอง
+POST {{lms.backend_HostAddress}}/api/auth/change-password
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "Admin123!",
+  "newPassword": "NewPass123!"
+}
+
+### รายชื่อผู้ใช้ระบบ (เฉพาะ Admin)
+GET {{lms.backend_HostAddress}}/api/users
+Authorization: Bearer {{login.response.body.token}}
+
+### เพิ่มผู้ใช้ระบบ (เฉพาะ Admin)
+POST {{lms.backend_HostAddress}}/api/users
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "username": "librarian2",
+  "fullName": "บรรณารักษ์คนที่สอง",
+  "email": "librarian2@lms.local",
+  "password": "Librarian123!",
+  "role": "Librarian"
+}
+
+### รีเซ็ตรหัสผ่านให้ผู้ใช้อื่น (เฉพาะ Admin)
+POST {{lms.backend_HostAddress}}/api/users/{id}/reset-password
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "newPassword": "ResetPass123!"
+}
+
+### สถิติแดชบอร์ด
+GET {{lms.backend_HostAddress}}/api/dashboard/stats
+Authorization: Bearer {{login.response.body.token}}
+
+### หนังสือเข้าใหม่ล่าสุด
+GET {{lms.backend_HostAddress}}/api/dashboard/recent-books
+Authorization: Bearer {{login.response.body.token}}
+
+### รายการหนังสือ (ค้นหา + กรอง + แบ่งหน้า)
+GET {{lms.backend_HostAddress}}/api/books?search=clean&page=1&pageSize=12
+Authorization: Bearer {{login.response.body.token}}
+
+### เพิ่มหนังสือใหม่ (categoryId เอามาจาก GET /api/categories)
+POST {{lms.backend_HostAddress}}/api/books
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "title": "Refactoring: Improving the Design of Existing Code",
+  "author": "Martin Fowler",
+  "categoryId": "วาง-guid-ของหมวดหมู่ตรงนี้",
+  "totalCopies": 3,
+  "isbn": "9780134757599",
+  "publisher": "Addison-Wesley",
+  "publishedYear": 2018,
+  "description": "แนวทางการปรับปรุงโค้ดที่มีอยู่ให้ดีขึ้น"
+}
+
+### แก้ไขหนังสือ
+PUT {{lms.backend_HostAddress}}/api/books/{id}
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "title": "หนังสือฉบับแก้ไข",
+  "author": "ผู้แต่ง",
+  "categoryId": "วาง-guid-ของหมวดหมู่ตรงนี้",
+  "totalCopies": 5
+}
+
+### ลบหนังสือ
+DELETE {{lms.backend_HostAddress}}/api/books/{id}
+Authorization: Bearer {{login.response.body.token}}
+
+### หมวดหมู่ทั้งหมด
+GET {{lms.backend_HostAddress}}/api/categories
+Authorization: Bearer {{login.response.body.token}}
+
+### เพิ่มหมวดหมู่
+POST {{lms.backend_HostAddress}}/api/categories
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "ศิลปะและการออกแบบ",
+  "description": "หนังสือสายศิลปะ กราฟิก และ UX/UI"
+}
+
+### รายชื่อสมาชิก
+GET {{lms.backend_HostAddress}}/api/members?search=
+Authorization: Bearer {{login.response.body.token}}
+
+### เพิ่มสมาชิก
+POST {{lms.backend_HostAddress}}/api/members
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "fullName": "ทดสอบ ระบบ",
+  "email": "test.member@example.com",
+  "phoneNumber": "08x-xxx-xxxx",
+  "isActive": true
+}
+
+### รายการยืมที่กำลังยืมอยู่
+GET {{lms.backend_HostAddress}}/api/borrowings?status=active
+Authorization: Bearer {{login.response.body.token}}
+
+### รายการยืมที่เกินกำหนด
+GET {{lms.backend_HostAddress}}/api/borrowings?status=overdue
+Authorization: Bearer {{login.response.body.token}}
+
+### บันทึกการยืม (bookId / memberId เอามาจาก API ด้านบน)
+POST {{lms.backend_HostAddress}}/api/borrowings/borrow
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "bookId": "วาง-guid-ของหนังสือตรงนี้",
+  "memberId": "วาง-guid-ของสมาชิกตรงนี้"
+}
+
+### รับคืนหนังสือ
+POST {{lms.backend_HostAddress}}/api/borrowings/{id}/return
+Authorization: Bearer {{login.response.body.token}}

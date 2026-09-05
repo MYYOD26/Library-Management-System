@@ -3,6 +3,8 @@ export interface DashboardStats {
   activeLoans: number
   dueToday: number
   totalMembers: number
+  overdueCount?: number
+  availableCopies?: number
 }
 
 export interface BookItemDto {

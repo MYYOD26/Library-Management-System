@@ -7,6 +7,7 @@ import {
   Heart,
   FileSpreadsheet,
   Users,
+  UserCog,
   BarChart3,
   Settings,
   HelpCircle,
@@ -23,6 +24,7 @@ const iconMap: Record<string, (size?: number) => JSX.Element> = {
   Heart: (size = 20) => <Heart size={size} />,
   FileSpreadsheet: (size = 20) => <FileSpreadsheet size={size} />,
   Users: (size = 20) => <Users size={size} />,
+  UserCog: (size = 20) => <UserCog size={size} />,
   BarChart3: (size = 20) => <BarChart3 size={size} />,
   Settings: (size = 20) => <Settings size={size} />,
   HelpCircle: (size = 20) => <HelpCircle size={size} />
