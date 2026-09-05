@@ -1,11 +1,28 @@
-import { Menu, Bell, User } from 'lucide-react'
+import { useState } from 'react'
+import { Bell, LogOut, Menu, User } from 'lucide-react'
 import type { NavbarProps } from '../../types/layout'
+import { useAuth } from '../../Context/AuthContext'
 import reactLogo from '../../assets/react.svg'
+
+const roleLabels: Record<string, string> = {
+  Admin: 'ผู้ดูแลระบบ',
+  Librarian: 'บรรณารักษ์',
+  Member: 'สมาชิก'
+}
+
+const roleBadgeStyles: Record<string, string> = {
+  Admin: 'bg-red-100 text-red-700',
+  Librarian: 'bg-blue-100 text-blue-700',
+  Member: 'bg-emerald-100 text-emerald-700'
+}
 
 export default function Navbar({
   onToggleSidebar,
   onToggleMobileSidebar
 }: NavbarProps) {
+  const { user, logout } = useAuth()
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+
   const handleMenuClick = () => {
     // Check window size to toggle desktop vs mobile
     if (window.innerWidth < 768) {
@@ -13,6 +30,11 @@ export default function Navbar({
     } else {
       onToggleSidebar()
     }
+  }
+
+  const handleLogout = () => {
+    setIsProfileOpen(false)
+    logout()
   }
 
   return (
@@ -28,7 +50,6 @@ export default function Navbar({
         </button>
 
         <a href="/" className="flex items-center gap-2.5 text-decoration-none group">
-          {/* *** จุดนี้คือโลโก้ไอคอนใน Navbar (เปลี่ยนเป็น react.svg แล้ว) *** */}
           <img
             src={reactLogo}
             alt="React logo"
@@ -56,15 +77,43 @@ export default function Navbar({
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
         </button>
 
-        <div className="pl-1 border-l border-gray-200 ml-1">
+        <div className="relative pl-1 border-l border-gray-200 ml-1">
           <button
             title="โปรไฟล์ผู้ใช้"
+            onClick={() => setIsProfileOpen((prev) => !prev)}
             className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
           >
             <div className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-semibold text-sm">
               <User size={18} />
             </div>
           </button>
+
+          {/* Profile Dropdown */}
+          {isProfileOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)} />
+              <div className="absolute right-0 top-full mt-2 z-50 w-64 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
+                <div className="p-4 border-b border-gray-100">
+                  <p className="font-bold text-gray-900 text-sm truncate">{user?.fullName}</p>
+                  <p className="text-xs text-gray-500 truncate mt-0.5">@{user?.username} • {user?.email}</p>
+                  <span
+                    className={`inline-block mt-2 px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                      roleBadgeStyles[user?.role ?? ''] ?? 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    {roleLabels[user?.role ?? ''] ?? user?.role}
+                  </span>
+                </div>
+
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+                >
+                  <LogOut size={16} /> ออกจากระบบ
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>

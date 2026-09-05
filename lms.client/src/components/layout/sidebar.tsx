@@ -4,6 +4,7 @@ import { X } from 'lucide-react'
 import type { SidebarProps } from '../../types/layout'
 import { sidebarService, type MenuSectionDto, type MenuItemDto } from '../../Services/sidebarService'
 import { renderMenuIcon } from '../../Services/iconMapper'
+import { useAuth } from '../../Context/AuthContext'
 
 export default function Sidebar({
   isExpanded,
@@ -12,6 +13,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
+  const { user } = useAuth()
 
   const [sections, setSections] = useState<MenuSectionDto[]>([])
   const [miniItems, setMiniItems] = useState<MenuItemDto[]>([])
@@ -23,8 +25,8 @@ export default function Sidebar({
     async function loadSidebarMenu() {
       try {
         const [fetchedSections, fetchedMiniItems] = await Promise.all([
-          sidebarService.getMenuSections(),
-          sidebarService.getMiniSidebarItems()
+          sidebarService.getMenuSections(user?.role),
+          sidebarService.getMiniSidebarItems(user?.role)
         ])
         if (isMounted) {
           setSections(fetchedSections)

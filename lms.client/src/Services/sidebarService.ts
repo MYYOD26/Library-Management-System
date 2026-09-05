@@ -4,6 +4,8 @@ export interface MenuItemDto {
   iconName: string
   route?: string
   badge?: string
+  /** role ที่มีสิทธิ์เห็นเมนูนี้ (ไม่ระบุ = ทุก role) */
+  roles?: string[]
 }
 
 export interface MenuSectionDto {
@@ -22,28 +24,26 @@ const defaultMenuSections: MenuSectionDto[] = [
       { id: 'categories', label: 'หมวดหมู่หนังสือ', iconName: 'Layers', route: '/categories' },
     ]
   },
+  {
+    id: 'library',
+    title: 'การยืม-คืน',
+    items: [
+      { id: 'borrowings', label: 'รายการยืม-คืน', iconName: 'BookMarked', route: '/borrowings' },
+    ]
+  },
+  {
+    id: 'admin',
+    title: 'การจัดการ (Admin)',
+    items: [
+      { id: 'members', label: 'จัดการสมาชิก', iconName: 'Users', route: '/members', roles: ['Admin', 'Librarian'] },
+      { id: 'users', label: 'ผู้ใช้ระบบ', iconName: 'UserCog', route: '/users', roles: ['Admin'] },
+    ]
+  },
   // {
-  //   id: 'library',
-  //   title: 'คลังหนังสือของฉัน',
+  //   id: 'reports',
+  //   title: 'รายงานและระบบ',
   //   items: [
-  //     { id: 'borrowed', label: 'รายการยืม-คืน', iconName: 'BookMarked', route: '/borrowed' },
-  //     { id: 'history', label: 'ประวัติการยืม', iconName: 'History', route: '/history' },
-  //     { id: 'favorites', label: 'หนังสือโปรด', iconName: 'Heart', route: '/favorites' },
-  //   ]
-  // },
-  // {
-  //   id: 'admin',
-  //   title: 'การจัดการ (Admin)',
-  //   items: [
-  //     { id: 'manage-books', label: 'จัดการรายการหนังสือ', iconName: 'FileSpreadsheet', route: '/manage-books' },
-  //     { id: 'members', label: 'จัดการสมาชิก', iconName: 'Users', route: '/members' },
   //     { id: 'reports', label: 'รายงานและสถิติ', iconName: 'BarChart3', route: '/reports' },
-  //   ]
-  // },
-  // {
-  //   id: 'system',
-  //   title: 'ตั้งค่าและช่วยเหลือ',
-  //   items: [
   //     { id: 'settings', label: 'ตั้งค่าระบบ', iconName: 'Settings', route: '/settings' },
   //     { id: 'help', label: 'ช่วยเหลือ & คำแนะนำ', iconName: 'HelpCircle', route: '/help' },
   //   ]
@@ -52,22 +52,29 @@ const defaultMenuSections: MenuSectionDto[] = [
 
 const defaultMiniSidebarItems: MenuItemDto[] = [
   { id: 'home', label: 'หน้าหลัก', iconName: 'Home', route: '/' },
-  // { id: 'books', label: 'หนังสือ', iconName: 'BookOpen', route: '/books' },
-  // { id: 'borrowed', label: 'รายการยืม', iconName: 'BookMarked', route: '/borrowed' },
-  // { id: 'history', label: 'ประวัติ', iconName: 'History', route: '/history' },
-  // { id: 'settings', label: 'ตั้งค่า', iconName: 'Settings', route: '/settings' },
+  { id: 'books', label: 'หนังสือ', iconName: 'BookOpen', route: '/books' },
+  { id: 'borrowings', label: 'ยืม-คืน', iconName: 'BookMarked', route: '/borrowings' },
+  { id: 'members', label: 'สมาชิก', iconName: 'Users', route: '/members', roles: ['Admin', 'Librarian'] },
 ]
 
+/** กรองเมนูตาม role ของผู้ใช้ (item ที่ไม่ระบุ roles เห็นได้ทุก role) */
+function filterByRole(items: MenuItemDto[], role?: string): MenuItemDto[] {
+  return items.filter((item) => !item.roles || (role !== undefined && item.roles.includes(role)))
+}
+
 export const sidebarService = {
-  async getMenuSections(): Promise<MenuSectionDto[]> {
+  async getMenuSections(role?: string): Promise<MenuSectionDto[]> {
     return new Promise((resolve) => {
-      setTimeout(() => resolve(defaultMenuSections), 100)
+      const sections = defaultMenuSections
+        .map((section) => ({ ...section, items: filterByRole(section.items, role) }))
+        .filter((section) => section.items.length > 0)
+      setTimeout(() => resolve(sections), 100)
     })
   },
 
-  async getMiniSidebarItems(): Promise<MenuItemDto[]> {
+  async getMiniSidebarItems(role?: string): Promise<MenuItemDto[]> {
     return new Promise((resolve) => {
-      setTimeout(() => resolve(defaultMiniSidebarItems), 100)
+      setTimeout(() => resolve(filterByRole(defaultMiniSidebarItems, role)), 100)
     })
   }
 }
